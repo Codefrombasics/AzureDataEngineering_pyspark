@@ -1,0 +1,187 @@
+Increasing and Decreasing Partitions
+==============================
+
+
+100,200,300,400,500
+
+
+default partition in spark
+
+2  
+
+
+<100,200>  <300,400,500>
+  <300>    <1200>
+partition1 partition2
+
+
+if we have more partition we can achieve more parallelism
+
+if we want to increase the partition 
+1. parallelize(data,numberofpartitiontoincrease)
+2. we can change the default partitions (not recommended)
+
+
+x=[100,200,300,400,500]
+>>> rdd1=sc.parallelize(x)
+>>> rdd1.getNumPartitions()- default
+2
+>>> sc.defaultParallelism
+2
+>>> rdd1=sc.parallelize(x,4)-> increasing partition by 4
+>>> rdd1.getNumPartitions()
+4
+
+
+if i want to decrease the partition we can use either coalease()
+or repartition()(not recommended for decreasing, but recommended for increasing) 
+
+coalease() can only decrease the number of partitions, cannot increase
+
+
+>>> rdd3=rdd1.coalesce(1)
+>>> rdd3.getNumPartitions()
+1
+>>> rdd3.saveAsTextFile("hdfs://localhost:9000/pysparkoutput2/result3")
+
+
+Increasing  number of partitions 
+
+1. using parallelize method-> for converting python object into RDD
+2. while loading a file from HDFS, we can specify the number of partitions we want
+
+
+dinesh@dinesh-VMware-Virtual-Platform:~$ cat emp1.txt 
+101,Hariharan,10000,m,11
+102,Kalai,20000,f,12
+103,Sivam,30000,m,11
+104,Blake,35000,m,12
+105,James,40000,m,11
+dinesh@dinesh-VMware-Virtual-Platform:~$ hdfs dfs -put emp1.txt /dineshnew
+dinesh@dinesh-VMware-Virtual-Platform:~$ hdfs dfs -ls /dineshnew
+Found 3 items
+-rw-r--r--   1 dinesh supergroup        109 2025-03-30 19:50 /dineshnew/emp1.txt
+-rw-r--r--   1 dinesh supergroup         28 2025-03-22 20:10 /dineshnew/hello.txt
+-rw-r--r--   1 dinesh supergroup         26 2025-03-22 20:13 /dineshnew/hello2.txt
+
+
+>>> rddnew=sc.textFile("hdfs://localhost:9000/dineshnew/emp1.txt",4)
+>>> rddnew.getNumPartitions()
+4
+>>> rddnew.collect()
+['101,Hariharan,10000,m,11', '102,Kalai,20000,f,12', '103,Sivam,30000,m,11', '104,Blake,35000,m,12', '105,James,40000,m,11']
+
+
+
+Different ways of creating RDD: 3 ways
+1.r1=sc.textFile("path")- when we read file from hdfs using textFile() 
+2.r1.filter()- when we perform transformations
+3.r1=sc.parllelize()-> converting python object to Spark object
+
+
+Loading data and filtering data
+
+rdd1=sc.textFile("hdfs://localhost:9000/dineshnew/emp1.txt")
+
+['101,Hariharan,10000,m,11', '102,Kalai,20000,f,12', '103,Sivam,30000,m,11', '104,Blake,35000,m,12', '105,James,40000,m,11']
+
+>>> rdd2=rdd1.map(lambda x:x.split(","))
+>>> rdd2.collect()
+[['101', 'Hariharan', '10000', 'm', '11'], ['102', 'Kalai', '20000', 'f', '12'], ['103', 'Sivam', '30000', 'm', '11'], ['104', 'Blake', '35000', 'm', '12'], ['105', 'James', '40000', 'm', '11']]
+
+[
+[101,Hariharan,10000,m,11],
+[102,Kalai,20000,f,12],
+[103,Sivam,30000,m,11],
+[104,Blake,35000,m,12],
+[105,James,40000,m,11]
+]
+
+
+>>> #extract only names and salaries
+>>> name_salary_rdd=rdd2.map(lambda x:(x[1],int(x[2])))
+>>> name_salary_rdd.collect()
+[('Hariharan', 10000), ('Kalai', 20000), ('Sivam', 30000), ('Blake', 35000), ('James', 40000)]
+>>> 
+
+>>> #I want to get the salaries above 20000
+>>> above_20000=name_salary_rdd.filter(lambda x:x[1]>20000)
+>>> above_20000.collect()
+[('Sivam', 30000), ('Blake', 35000), ('James', 40000)]
+
+
+>>> #get me the employees of department 11
+>>> 
+>>> rdd1=sc.textFile("hdfs://localhost:9000/dineshnew/emp1.txt")
+>>> rdd2=rdd1.map(lambda x:x.split(","))
+>>> rdd2.collect()
+[['101', 'Hariharan', '10000', 'm', '11'], ['102', 'Kalai', '20000', 'f', '12'], ['103', 'Sivam', '30000', 'm', '11'], ['104', 'Blake', '35000', 'm', '12'], ['105', 'James', '40000', 'm', '11']]
+[]
+>>> rdd3=rdd2.filter(lambda x:x[4]=="11")
+>>> rdd3.collect()
+[['101', 'Hariharan', '10000', 'm', '11'], ['103', 'Sivam', '30000', 'm', '11'], ['105', 'James', '40000', 'm', '11']]
+
+
+# applying multiple conditions
+>>> #retrieve employees from department 11 and salary is above 20000
+>>> rdd1=sc.textFile("hdfs://localhost:9000/dineshnew/emp1.txt")
+>>> rdd2=rdd1.map(lambda x:x.split(","))
+>>> rdd3=rdd2.map(lambda x:(x[1],int(x[2]),int(x[4])))
+>>> rdd3.collect()
+[('Hariharan', 10000, 11), ('Kalai', 20000, 12), ('Sivam', 30000, 11), ('Blake', 35000, 12), ('James', 40000, 11)]
+>>> rdd4=rdd3.filter(lambda x:x[2]==11 and x[1]>20000)
+>>> rdd4.collect()
+[('Sivam', 30000, 11), ('James', 40000, 11)]
+
+
+[[1,2,3][4,5,6],[7,8,9]]
+
+flatMap-> 1,2,3,4,5,6,7,8,9
+
+
+
+# Wordcount: to count the number of time each word appears in a file
+=============================================================================
+>>> rdd1=sc.textFile("hdfs://localhost:9000/dineshnew/sparkdata.txt")
+>>> rdd1.collect()
+['spark is faster than MR', 'spark is distributed', 'spark is for in-memory computing', 'spark is for processing the data', 'HDFS is for storing the data']
+>>> rdd_words=rdd1.map(lambda x:x.split(" "))
+>>> rdd_words.collect()
+[['spark', 'is', 'faster', 'than', 'MR'], ['spark', 'is', 'distributed'], ['spark', 'is', 'for', 'in-memory', 'computing'], ['spark', 'is', 'for', 'processing', 'the', 'data'], ['HDFS', 'is', 'for', 'storing', 'the', 'data']]
+>>> flattendwords=rdd_words.flatMap(lambda x:x)
+>>> flattendwords.collect()
+['spark', 'is', 'faster', 'than', 'MR', 'spark', 'is', 'distributed', 'spark', 'is', 'for', 'in-memory', 'computing', 'spark', 'is', 'for', 'processing', 'the', 'data', 'HDFS', 'is', 'for', 'storing', 'the', 'data']
+>>> #convert word into pair rdd(spark,1),(spark,1)-> spark,2
+>>> pair=flattendwords.map(lambda x:(x,1))
+>>> pair.collect()
+[('spark', 1), ('is', 1), ('faster', 1), ('than', 1), ('MR', 1), ('spark', 1), ('is', 1), ('distributed', 1), ('spark', 1), ('is', 1), ('for', 1), ('in-memory', 1), ('computing', 1), ('spark', 1), ('is', 1), ('for', 1), ('processing', 1), ('the', 1), ('data', 1), ('HDFS', 1), ('is', 1), ('for', 1), ('storing', 1), ('the', 1), ('data', 1)]
+>>> result=pair.reduceByKey(lambda x,y:x+y)
+>>> result.collect()
+[('faster', 1), ('than', 1), ('MR', 1), ('distributed', 1), ('for', 3), ('computing', 1), ('spark', 4), ('is', 5), ('in-memory', 1), ('processing', 1), ('the', 2), ('data', 2), ('HDFS', 1), ('storing', 1)]
+>>> #find the number of times the word spark appears
+>>> onlysparkword=result.filter(lambda x:x[0]=='spark')
+>>> onlysparkword.collect()
+[('spark', 4)]
+
+
+
+In Databricks
+============
+
+Save your file in DBFS from catalog click upload-> upload sample.txt
+
+
+from pyspark.sql import SparkSession
+spark=SparkSession.builder.appName("myapp").getOrCreate()
+rdd=spark.sparkContext.textFile("dbfs:/FileStore/sample.txt")
+rdd.collect()
+
+
+sample.txt
+===========
+
+101,Hariharan,10000,m,11
+102,Kalai,20000,f,12
+103,Sivam,30000,m,11
+104,Blake,35000,m,12
+105,James,40000,m,11

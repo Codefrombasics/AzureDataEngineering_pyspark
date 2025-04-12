@@ -1,0 +1,217 @@
+
+3. Filter(): filter elements of the RDD based on the condition and resultant also RDD
+
+salary=[10000,20000,30000,40000,50000]
+rdd1=sc.parallelize(salary)
+rdd2=rdd1.filter(lambda x:x>30000)
+res=rdd2.collect()
+print(res)
+[40000,50000]
+
+4. union(): combines elements of multiple RDDs, by default it will perform union all(duplicates are allowed)
+
+r1=sc.parallelize([10,20,30,40,50])
+
+r2=sc.parallelize([10,20,30,70,80])
+
+res=r1.union(r2)
+res.count() answer is 10
+print(res)
+
+[10,20,30,40,50,10,20,30,70,80]
+
+5. intersection: returns only the common elememnts
+
+developers=sc.parallelize(["Ajay","Ankit","Ragu","vishu","Muthu"])
+devops_engr=sc.parallelize(["Ajay","Ankit","Rajiv","Vinith","Martin"])
+
+#find who is either developer or devops engr
+
+dev_devops=developers.intersection(devops_engr)
+print(dev_devops.collect())
+["Ajay","Ankit"]
+6. Subtract(): give uncommon value from set1 to set2
+
+r1=sc.parallelize([10,20,30,40,50])
+
+r2=sc.parallelize([10,20,30,70,80])
+
+result=r1.subtract(r2)
+print(result.collect())
+[40,50]
+result2=r2.subtract(r1)
+print(result2.collect())
+[70,80]
+
+7. Cartesian: each element of left side will merge with each element of rightside
+
+
+r1=sc.parallelize([10,20,30,40,50])
+
+r2=sc.parallelize([10,20,30,70,80])
+
+
+cartesian_result=r1.cartesian(r2)
+>>> cartesian_result.collect()
+[(10, 10), (10, 20), (20, 10), (20, 20), (10, 30), (10, 70), (20, 30), (20, 70), (10, 80), (20, 80), (30, 10), (30, 20), (40, 10), (40, 20), (50, 10), (50, 20), (30, 30), (30, 70), (40, 30), (40, 70), (30, 80), (40, 80), (50, 30), (50, 70), (50, 80)]
+
+
+8. Distinct(): removes the duplicates
+
+data=[10,20,30,40,50,10,20,30,70,80]
+rdd1=sc.parallelize(data)
+res=rdd1.distinct()
+res.collect()
+
+
+
+Transformations on a pair RDD i,e (key,value) paris mostly list of tuples
+
+
+1.reduceByKey(): sum all the values with same key, this function will be applied to pair RDD
+
+r1=sc.parallelize([(11,1000),(12,2000),(11,3000),(12,4000),(13,1500),(13,600)])
+
+11,[1000,3000]
+      x    y
+11,1000+3000
+
+12,[2000,4000]
+12,2000+4000
+
+13,[1500,600]
+13, 1500+600
+
+sum of numbers in each key
+11,4000
+12,6000
+13,2100
+
+Maximum of numbers in each key
+11,3000
+12,4000
+13,2100
+
+
+res=r1.reduceByKey(lambda x,y:x+y)
+res.collect()
+
+To find the maximum value in the key
+
+>> res=r1.reduceByKey(lambda x,y:x if(x>y)else y)
+>>> res.collect()
+
+[(12, 4000), (11, 3000), (13, 1500)]
+
+medals=sc.parallelize([("India",2),("USA",1),("India",1),("Japan",3),("UK",1),("USA",2),("Japan",1)])
+>>> rdd2=medals.reduceByKey(lambda x,y:x+y)
+"India",[2,1]
+"Japan",[3,1]
+"USA",[1,2]
+"UK",[1]
+
+India,3
+Japan,4
+USA,3
+UK,1
+>>> rdd2.collect()
+[('Japan', 4), ('UK', 1), ('India', 3), ('USA', 3)]
+
+---------------------------------------------------------------------------------------
+groupByKey()-> key,<list>-> iterable
+
+medals=sc.parallelize([("India",2),("USA",1),("India",1),("Japan",3),("UK",1),("USA",2),("Japan",1)])
+
+ res=medals.groupByKey()
+>>> res.collect()
+[('Japan', <pyspark.resultiterable.ResultIterable object at 0x7b0db0670650>),
+-------------------------------------------------------------------------------
+    x[0] ,              list( x[1])
+                    x
+ ('UK', <pyspark.resultiterable.ResultIterable object at 0x7b0db06706e0>),
+ ------------------------------------------------------------------------------
+                           x
+ ('India', <pyspark.resultiterable.ResultIterable object at 0x7b0db0672e70>), 
+('USA', <pyspark.resultiterable.ResultIterable object at 0x7b0db0671d90>)]
+
+the result is countryname,iterable -> we need to convert the iterable to list
+
+
+
+res=medals.groupByKey()
+res2=res.map(lambda x:(x[0],list(x[1])))#output is shown below
+[('Japan', [3, 1]), ('UK', [1]), ('India', [2, 1]), ('USA', [1, 2])]
+   ---------------  ----------
+       x                x
+res3=res2.map(lambda x:(x[0],sum(x[1])))# each element in the above pair rdd is 'x'
+>>> res3.collect()
+[('Japan', 4), ('UK', 1), ('India', 3), ('USA', 3)]
+
+    groupByKey                                                 
+	
+ output is key,iterable   
+ no need to pass lambda function like reduceByKey 
+ 
+ [(11,1000),(12,2000),(11,3000),(12,4000),(13,1500),(13,600)]
+ 
+ <--------p1---------> <--------p2---------> <--------p3--------->
+   11,[1000]               11,3000               13,1500
+   12,[2000]               12,4000               13,600
+   
+   11,[1000,3000]        12,[2000,4000]          13,[1500,600]
+  
+   
+   11,4000
+   12,6000
+   13,2100
+
+
+reduceByKey
+
+output is K,V
+need to pass lambda function
+
+ [(11,1000),(12,2000),(11,3000),(12,4000),(13,1500),(13,600)]
+ 
+ <--------p1---------> <--------p2---------> <--------p3--------->
+   11,[1000]               11,3000               13,1500
+   12,[2000]               12,4000               13,600
+   
+        11,4000          12,6000              13,2100
+                     
+--------------------------------------------------------------------------------------
+
+sortByKey()-> sort based on the key
+res3 =[('Japan', 4), ('UK', 1), ('India', 3), ('USA', 3)]
+
+result=res3.sortByKey()
+>>> result.collect()
+[('India', 3), ('Japan', 4), ('UK', 1), ('USA', 3)]
+
+--------------------------------------------------------------------------------------
+mapValues(): without changing the key, it will apply functionality to each value
+
+result.collect()-> from the previous result
+[('India', 3), ('Japan', 4), ('UK', 1), ('USA', 3)]
+>>> afermapping=result.mapValues(lambda x:x+2)
+>>> afermapping.collect()
+[('India', 5), ('Japan', 6), ('UK', 3), ('USA', 5)]
+
+---------------------------------------------------------------------------------------
+Join()
+
+r1=sc.parallelize([(10,20),(30,40),(50,60)])
+r2=sc.parallelize([(10,25),(30,45),(10,55)])
+>>> r1=sc.parallelize([(10,20),(30,40),(50,60)])
+>>> r2=sc.parallelize([(10,25),(30,45),(10,55)])
+>>> inner_join=r1.join(r2)
+>>> inner_join.collect()
+[(10, (20, 25)), (10, (20, 55)), (30, (40, 45))]
+
+
+1   1
+1   2
+2   2
+3   2
+4   6
+5   7

@@ -1,0 +1,158 @@
+Azure Synapse Analytics
+========================
+
+Need for a datawarehouse
+
+In our databases -> oracle,mysql
+
+we cannot do analytics in Database, because it will burder the databases, 
+database is only meant for day to day transactions not for analysis
+
+if you want to do analytics, we have datawarehouse, it is specially built for analytics
+
+keeping historical data in database can be a big challange
+
+
+
+Azure Synapse Analytics-> it is much more than a datawarehouse
+
+
+Every Synapse workspace should be associated with one storage account - ADLS Gen2
+
+
+Definition of Azure Synapse Analytics
+
+1. Unified analytics service which brings together
+	data integration
+	enterprise level datawarehousing
+	big data analytics
+	
+	
+In ADF we have used Copy Activity and Data flow for ingestion
+
+
+
+In synapse
+
+Exteranal Source --> Ingest->ADLS Gen2 ->Compute
+
+Ingestion-> Synapse Pipeline, mapping dataflow
+Computation--> dedicated SQL Pool, serverless SQL pool, apache spark pool, mapping dataflows
+
+
+
+dedicated SQL Pool-> is more like Redshift in AWS
+
+Serverles is more like Athena in AWS--> it charges $5 for 1 TB of data scanned.
+
+Apache Spark Spool- it will process  on a spark cluster
+
+mapping dataflow- already seen in ADF
+
+
+we can connect this to POWER BI
+
+
+Serverless sql pool(built in)
+Dedicated SQL pool (we have to crate)
+Apache spark Pool( runs on Apache Cluster)
+
+
+
+
+Serverless sql pool(built in)
+1. Uploaded orders.csv file using synapse studio- ADLS gen2 account
+2. we have seen how to query, just by right click the file and selected the option (select 100 rows)
+  using OPENROWSET, no need to create a database table
+  
+  
+External table and Managed Table
+
+
+1. where your metadata is stored in DWH and data is stored in ADLS Gen2
+
+metadata(DWH) + mydata(Datalake)
+
+
+2. Normal Table (managed)
+DWH stores both metadata and data
+
+
+In case of serverless SQL Pool, we can have only external table, but not a normal table
+
+
+SQL Pool
+
+1. Dedicated sql poo1
+2. Serverless sql Pool
+
+there is a already avaialb esql pool named built in
+
+$5 per TB of data scanned
+
+even if you are scanning less than 10MB it will atlease chage you for 10 mb
+
+
+if you are scanning 5KB of data
+
+10mb/1tb * $5=
+
+
+
+How to create an external table
+
+create external table orders(
+
+order_id int,
+...
+...
+
+
+)
+with(
+location="xyz/orders.csv"
+datasource=""                          equal to linkedservice
+file_format=""                         equal to dataset
+
+)
+
+
+
+1. create a datasource
+
+CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'xyz@7869#'
+
+CREATE DATABASE SCOPED CREDENTIAL SasToken
+WITH IDENTITY = 'SHARED ACCESS SIGNATURE',
+     SECRET = 'sv=2024-11-04&ss=b&srt=sc&sp=rwdlacyx&se=2025-03-23T15:12:58Z&st=2025-03-23T07:12:58Z&spr=https&sig=eFbSUa0gDKxSoiUOTxWr9Xj2snvcZTjaXV981PB4x5w%3D';
+
+ CREATE EXTERNAL DATA SOURCE ExtDataSrc
+ with(
+ location='https://cfb101.dfs.core.windows.net/mydata/',
+ credentail=SasToken
+ )
+ 
+ 
+2. create a file format
+
+CREATE EXTERNAL FILE FORMAT TextFileFormat WITH ( FORMAT_TYPE = DELIMITEDTEXT,
+FORMAT_OPTIONS(
+FIELD_TERMINATOR=",",
+FIRST_ROW=2))
+3. create a external table
+
+
+create external table orders(
+
+order_id bigint,
+order_date nvarchar(400)
+customer_id bigint,
+order_status nvarchar(400)
+)
+with(
+location="orders.csv"
+datasource= ExtDataSrc                         
+file_format=TextFileFormat                      
+
+)
+https://cfb101.dfs.core.windows.net/mydata

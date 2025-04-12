@@ -1,0 +1,153 @@
+Session 4  [14/03/2025]
+=========
+
+
+We need daemons to start hadoop cluster
+start-dfs.sh -> master
+start-yarn.sh -> slave
+
+5 Daemons
+
+1. Namenode
+2. ResourceManager
+3. SecondaryNameNode
+4. NodeManager
+5. DataNode
+
+
+
+Every HDFS command should start with hadoop fs --commandname
+
+Ex: 
+1. hadoop fs -ls /  -------->Display all the files within hdfs
+2. hadoop fs -mkdir /mydir  ---> creates a new directory "mydir"
+3. hadoop fs -cat /filename  -> read the file in hdfs
+
+We cannot create files in HDFS, bcoz changes, modifications, or overwriting are not allowed
+within HDFS, all the file editors like vi,nano are not supported. we need to always move the file (data) 
+from LFS(Local File System) to HDFS. We have a command to copy the file from LFS to HDFS
+1. copyFromLocal or put
+
+4. hadoop fs -copyFromLocal LFSPath  HDFSPath
+
+          or
+  hadoop fs -put LFSPath  HDFSPath
+		  
+5. copying multiple files from LFS to HDFS
+hadoop fs -copyFromLocal *.java  /mydir
+ to check hadoop fs -ls /mydir
+ 
+ 
+ to copy only 2 specific files from LFS to HDFS
+ hadoop fs -put sample1.txt file2.txt /mydir
+ 
+ copying a dirctory from LFS to HDFS
+  hadoop fs -put dineshdir /mydir
+  
+  
+  
+  
+ copying a data from a file of LFS to anothername in HDFS
+ 
+  hadoop fs -put sample1.txt /mydir/sample3.txt
+  will create sample3.txt in hdfs under mydir and copy the content of sample1.txt 
+  
+  
+  copying file from HDFS to LFS
+  
+  1. copyToLocal or get
+  
+   hadoop fs -get /mydir/sample3.txt  /mydir
+   
+   
+Copying from local machine to HDFS
+-----------------------------------
+   
+dinesh@dinesh-VMware-Virtual-Platform:~$ start-all.sh
+WARNING: Attempting to start all Apache Hadoop daemons as dinesh in 10 seconds.
+WARNING: This is not a recommended production deployment configuration.
+WARNING: Use CTRL-C to abort.
+Starting namenodes on [localhost]
+Starting datanodes
+Starting secondary namenodes [dinesh-VMware-Virtual-Platform]
+Starting resourcemanager
+Starting nodemanagers
+dinesh@dinesh-VMware-Virtual-Platform:~$ jps
+3635 SecondaryNameNode
+3461 DataNode
+3286 NameNode
+4008 NodeManager
+4154 Jps
+3883 ResourceManager
+dinesh@dinesh-VMware-Virtual-Platform:~$ ^C
+dinesh@dinesh-VMware-Virtual-Platform:~$ ps
+    PID TTY          TIME CMD
+   2771 pts/0    00:00:00 bash
+   3883 pts/0    00:00:24 java
+   4375 pts/0    00:00:00 ps
+dinesh@dinesh-VMware-Virtual-Platform:~$ ls
+azure    Documents  hadoop      hello.txt  Pictures  snap   Templates
+Desktop  Downloads  hadoopdata  Music      Public    spark  Videos
+dinesh@dinesh-VMware-Virtual-Platform:~$ hdfs dfs -ls /
+Found 1 items
+drwxr-xr-x   - dinesh supergroup          0 2025-03-20 18:36 /dinesh
+dinesh@dinesh-VMware-Virtual-Platform:~$ hdfs dfs -ls /dinesh
+Found 1 items
+-rw-r--r--   1 dinesh supergroup         13 2025-03-20 18:36 /dinesh/hello.txt
+dinesh@dinesh-VMware-Virtual-Platform:~$ hdfs dfs -cat /dinesh/hello.txt
+good evening
+dinesh@dinesh-VMware-Virtual-Platform:~$ hdfs dfs -mkdir /dineshnew
+dinesh@dinesh-VMware-Virtual-Platform:~$ hdfs dfs -ls /
+Found 2 items
+drwxr-xr-x   - dinesh supergroup          0 2025-03-20 18:36 /dinesh
+drwxr-xr-x   - dinesh supergroup          0 2025-03-22 20:08 /dineshnew
+dinesh@dinesh-VMware-Virtual-Platform:~$ hdfs dfs -ls /dineshnew
+dinesh@dinesh-VMware-Virtual-Platform:~$ cat hello.txt
+good evening
+dinesh@dinesh-VMware-Virtual-Platform:~$ cat >> hello.txt
+happy saturday
+^C
+dinesh@dinesh-VMware-Virtual-Platform:~$ cat hello.txt
+good evening
+happy saturday
+dinesh@dinesh-VMware-Virtual-Platform:~$ hdfs dfs -copyFromLocal hello.txt /dineshnew
+dinesh@dinesh-VMware-Virtual-Platform:~$ hdfs dfs -ls /dineshnew
+Found 1 items
+-rw-r--r--   1 dinesh supergroup         28 2025-03-22 20:10 /dineshnew/hello.txt
+dinesh@dinesh-VMware-Virtual-Platform:~$ hdfs dfs -cat /dineshnew/hello.txt
+good evening
+happy saturday
+dinesh@dinesh-VMware-Virtual-Platform:~$ cat > hello2.txt
+another file in the local
+^C
+dinesh@dinesh-VMware-Virtual-Platform:~$ cat hello2.txt
+another file in the local
+dinesh@dinesh-VMware-Virtual-Platform:~$ hdfs dfs -put hello2.txt /dineshnew
+dinesh@dinesh-VMware-Virtual-Platform:~$ hdfs dfs -ls /dineshnew
+Found 2 items
+-rw-r--r--   1 dinesh supergroup         28 2025-03-22 20:10 /dineshnew/hello.txt
+-rw-r--r--   1 dinesh supergroup         26 2025-03-22 20:13 /dineshnew/hello2.txt
+
+
+
+Copy to local machine from HDFS
+------------------------------
+
+dinesh@dinesh-VMware-Virtual-Platform:~$ cd azure
+dinesh@dinesh-VMware-Virtual-Platform:~/azure$ ls
+azure1
+dinesh@dinesh-VMware-Virtual-Platform:~/azure$ hdfs dfs -get /dineshnew/hello.txt
+dinesh@dinesh-VMware-Virtual-Platform:~/azure$ ls
+azure1  hello.txt
+dinesh@dinesh-VMware-Virtual-Platform:~/azure$ hdfs dfs -copyToLocal /dineshnew/hello2.txt
+dinesh@dinesh-VMware-Virtual-Platform:~/azure$ ls
+azure1  hello2.txt  hello.txt
+dinesh@dinesh-VMware-Virtual-Platform:~/azure$ cat hello2.txt
+another file in the local
+dinesh@dinesh-VMware-Virtual-Platform:~/azure$ cat hello.txt
+good evening
+happy saturday
+dinesh@dinesh-VMware-Virtual-Platform:~/azure$ 
+
+
+ 

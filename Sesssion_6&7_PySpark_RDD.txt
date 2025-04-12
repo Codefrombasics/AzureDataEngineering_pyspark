@@ -1,0 +1,401 @@
+Session 6- PySpark
+-------------------
+
+Evolution of Spark
+
+-Spark was developed by Matei Zaharia, Berkely in the year 2009
+
+-Spark was made open source in the year 2010
+
+- Spark was donated to Apache Software Foundation in the year 2013
+
+
+
+What is Apache Spark(Replacement of Map Reduce)
+- Open source
+- Distributed Computing Frameword
+- With in-memory processing
+- used for large dataprocessing
+
+
+In-Memory Computing: 
+
+Data gets loaded into RAM and gets processed withnin RAM
+Data is divided into partitions and the partitions are distributed across multiple rams of
+multiple worker node(Datanode) are processed parallely
+
+It is genaral engine for Big Data Analytics(processing and computing)
+
+
+Why PySpark?
+
+- PySpark is the Python API for Spark
+- fast technology which is designed for fast computation
+
+
+PySpark is used for 
+  -Distributed SQL
+  -Creating Data Pipelines
+  -ingeting data into database
+  -running machine learning algorithms
+  -working graphs
+  -working with DataStreams
+  
+ Spark -> Scala
+ PySpark-> Python
+ 
+ 
+ 
+ Python                             Vs                  Scala
+ 
+ 1. Python is interpreted                           Scala is strictly type
+   x=10
+   x='A'
+   x=10.23
+ 2. Huge community                                  smaller community
+ 3. python easy to developed                        scala is 10 times faster than python 
+    performance wise slower than scala
+ 4. Has powerfull libraries                         Scala has no such libraries
+
+
+
+Industries uses python
+1. Health care
+2. commercial sector
+3. Trading and E-Commerce
+4. Tourism Industries
+5. Entertainment Industries
+
+
+
+Languages supported by Spark
+
+1. SCala(default)
+2. Python
+3. Java
+4. R 
+
+
+
+Execution Generation
+
+1.MapReduce(more code to be written for simple processing)
+2.Tej
+3. Spark
+
+Tej vs Spark-> both supports DAG(Direct Acyclic Graph)
+               Tej -> no In-Memory computing
+			   but spark is faster than Tej and supports In-Memory computing
+			   
+SAP- HANA is In-Memory computing system similar to Spark, but HANA is 
+			   
+			   
+
+not distributed,
+Spark is distributed.
+
+
+
+Hadoop(solution for storing Big Data)
+Fast Processing-> PySpark
+
+using the above 2 we are going to store and process the huge data
+
+
+PySpark is mainly designed for 
+ 1. Batch Application -> Non Interaction
+ 2. Interactive  and Interactive Algorithms and Queries
+ 3. Streaming for Immediate processing
+ 
+ 
+ Mapreduce     Vs Spark
+ 
+ MapReduce Drawbacks
+ 
+ 1. Transformation cannot be reused
+ 2. Bad for Iterative Algorithms
+ 3. Not for Flexible parallel processing
+ 4. Slow Processing
+ 
+ 
+ Spark Vs Pig(MR code in SQL)
+ 
+ Both are Data Flow Languages
+ But in pig Entire Dataflow will be converted to 1 MR Job
+ 
+ select * from Employee-> normal sql
+ 
+ select count(*) from Employee -> MR Job
+ 
+ 
+ PySpark Features
+ 
+ 1. In-Memory(TEJ)
+ 2. Distributed Computing(HANA)
+ 3. Flexible parallel processing(MR)
+ 4. Transformation can be reused
+ 5. Good Iterative Algorithms
+ 6. High Speed Processing
+ 7. Multiple Languages support(spark)
+ 8. Lazy Evolution
+ 9.Suppot Advanced Analytics
+ 10. Persitance Features
+ 11. Powerful Fault - Tolerant Model
+ 
+ RDD1-> RDD2-> RDD3
+ 
+ Yahoo--> Table -> 100TB-> 1024 Columns
+ 
+ Task-> sorting-> 16 columns
+ 
+ Timtaken
+ 
+ 1. Oracle-> 3.5days
+ 2. Mysql -> 6 days
+ 3. Teradata-> 4.5 hrs
+ 4. Netezze -> 3 hrs
+ 5. Hadoop ->  3.2 Mins -> spark -> 1.2 mins
+ 
+ 
+ Spark -> 100 times faster than Hadoop Map Reduce
+ 
+ 
+ Spark sorted the 100TB data using 206 nodes 23 Mins
+ 
+previous world record 72 mins set by Hadoop MR cluster of size 2100 nodes
+
+Storage
+
+1. In Memory(RAM) -> 100 times faster than MR
+2. In Disk  -> 10 times faster than MR
+
+
+
+RDD(Resilient Distributed Dataset)
+
+-> PySpark data object are called RDDs
+-> RDDs are divided into partitions
+-> these partitions are distributed across multiple RAMs of multiple worker node(CPUs)
+-> here the advantage-> huge Dataset also loaded
+-> RDD programming style is Dataflow
+-> DataFlow is a sequence of collection of Pipe(RDDs)
+
+
+-> A Pipe is any data operation, it can be 
+           - loading data
+		   - transforming data
+		   - merging data
+		   -filtering data
+		   -sorting data etc
+		   
+In Spark, RDD is executed in sequence, i.e, RDD by RDD(one after the other)
+with in-memory computation and presistence feature
+
+
+If a RDD has got 30 parititions, then all these 30 partitions can process parallely
+
+2 types of operations will be performed
+1. Transformation
+2. Actions
+
+Transformation on a RDD will also a RDD(Spark Object)
+Transformation means filtering,transforming,merging, grouping, sorting
+
+3 Types of Transformation
+1. Each element Transformation Ex; Map(), flatMap()
+2. Filter Transformation: based condition, Ex: filter(), filterByRange()
+3. Aggregated Transformation: Ex. group by city, groupByKey(), reduceByKey()
+
+
+Action on a RDD -> results a local object(Python Object)
+
+when action is performed then DAG (Data flow) will be executed from root
+
+
+1. Collect()- collect all the partitions data from different worker nodes into client 
+2. count()-> tells number of elements in RDD
+3. take(n)-> first n number of elemtns in RDD (like limit in mysql)
+4. saveAsTextFile()-> storing the results in to HDFS file
+
+Session - 7 RDD
+===============
+
+file location  D:\\Inputfolder\\Employee.csv
+
+rdd1=sc.textFile("D:\\Inputfolder\\Employee.csv")
+rdd2=rdd1.map(...)
+rdd3=rdd2.filter(...)
+rdd4=rdd3.flatMap(....)
+rdd5=rdd4.groupByKey(...)
+result=rdd5.collect() -> this will be a python object
+
+rdd1....rdd5 nothing will be executed, so  no RDD will be stored in RAM
+
+When action is performed only then RDDs will be loaded into RAM for processing
+One by One RDD will be loaded and computed  and the previous RDD will be removed, once
+the execution is completed.
+
+RDD1->    RDD2->RDD3-> RDD4--> RDD5
+(p1,p2,p3)
+
+
+2 Situations where RDD will be removed from RAM
+1. Whenever the next RDD is ready, pervious RDD will be removed
+2. When action or execution is completed then last RDD will also removed.
+
+2 Ways to persist an RDD
+1. RDD.persist()
+2. RDD.cache()
+
+if you want to remove the persisted RDD, there are 3 ways to do it
+
+1. Forcefully unpersisting by calling RDD.Unpersist()
+2. When session is closed
+3. when server shutdowns
+
+What is Lazy Evaluation?
+
+Executing the dataflow on demand by performing an action is called Lazy Evaluation
+
+
+Steps in RDD Computation
+
+1. Initially all RDD's are declared(not executed), they are not stored anywhere,we load and execute
+   them on demand by performing an action
+2. when action is performed, flow execution will start from its root RDD(rdd1) or available RDD
+3. During flow execution, each RDD patition will be loaded into RAM of cluster machine and computed at RAM
+4. Once RDD Computation is completed, it waits for its next RDD of the flow.
+   if next RDD is ready, previous RDD will be removed from RAM. This process will continue till the action is completed
+5. When action is performed, all RDDs are stored one by one and computed at spark side machine, but final result will
+   be stored in client machine, client machine is where we submitted the job.
+   
+6. During the flow of Execution, RDD which is commonly used by many flows will be persisted.
+   persisting means having RDD available in the RAM, so the other flows can reuse the executed transformation
+   
+7. Finally the RDD stored in RAM will be unpersisted when session is closed or when server shutdowns or forcefully we can unpersist   
+
+
+
+
+Case1
+
+R1  -> R2(current)
+
+Case 2
+
+R1 ---> R2(down)  ------>R3(Current)
+
+Case 3
+
+R1      R2           R3(Persisted)      R4          R5
+
+
+Case 4
+
+R1      R2           R3(Persisted,down)      R4          R5(Persisted,down)   R6
+
+
+
+
+
+rdd1=sc.textFile("D:\\Inputfolder\\Employee.csv")
+rdd2=rdd1.map(...)
+rdd3=rdd2.filter(...)
+rdd4=rdd3.flatMap(....)
+rdd5=rdd4.groupByKey(...)
+
+rdd3.persist()
+result=rdd5.collect() -> this will be a python object
+
+
+Rules for Persisting RDD
+
+1. for persisting an RDD, atleast one flow should be executed
+
+2. A RDD will be persisted when first time they are loaded and computed, even though the persist
+option proveded in later steps
+
+3. The RDD whose output is commnly used by multiple flows, persist that RDD
+4. We need to persist the RDD before action is performed
+
+rdd1=sc.textFile("D:\\Inputfolder\\Employee.csv")
+rdd2=rdd1.map(...)
+rdd3=rdd2.filter(...)
+rdd4=rdd3.flatMap(....)
+rdd5=rdd4.groupByKey(...)
+
+rdd3.persist()
+result=rdd5.collect() -> this will be a python object
+
+The flow of execution of the above code 
+
+1. RDD1 -> loaded+computed
+2. RDD2 -> loaded+computed, now RDD1 will be removed
+3. RDD3 -> loaded+computed+persist immediately and ready, now RDD2 will be removed
+4. RDD4 -> loaded+computed, now RDD3 will not be removed
+5. RDD5 -> loaded+computed+ready, now RDD4 will be removed
+
+when action is completed then R5 also removed
+
+Now RDD3 alone will be available in RAM
+
+RDD5.collect()
+
+RDD5 input is RDD4
+RDD4 input is RDD3
+RDD3 input is RDD2
+RDD2 input is RDD1
+RDD1 input is file
+
+
+Whenever you specify the persist option, it will be persisted only when it is first time 
+loaded and computed
+
+NameError: name 'clear' is not defined
+>>> x=[10,20,30,40,50]
+>>> rdd1=sc.parallelize(x)
+>>> rdd1.collect()
+[10, 20, 30, 40, 50]                                                            
+>>> rdd1.getNumPartitions()
+2
+>>> name="Rajesh"
+>>> rdd1=sc.parallelize(name)
+>>> rdd1.collect()
+['R', 'a', 'j', 'e', 's', 'h']
+>>> x=[10,20,30,40,50]
+>>> rdd1=sc.parallelize(x)
+>>> rdd2=rdd1.map(lamba x:x*x)
+  File "<stdin>", line 1
+    rdd2=rdd1.map(lamba x:x*x)
+                  ^^^^^^^
+SyntaxError: invalid syntax. Perhaps you forgot a comma?
+>>> rdd2=rdd1.map(lambda x:x*x) --> output is RDD
+>>> rdd2.collect()  -> output is python object
+[100, 400, 900, 1600, 2500]                                                     
+>>> x=[[1,2,3],[7,8,6],[4,5,6]]   --> output is RDD
+>>> y=sc.parallelize(x)     --> output is RDD
+>>> z=y.flatMap(lambda x:x)   --> output is RDD
+>>> w=z.collect()          --> pythonobject
+>>> print(w)
+[1, 2, 3, 7, 8, 6, 4, 5, 6]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

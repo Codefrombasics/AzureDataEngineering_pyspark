@@ -1,0 +1,198 @@
+
+left outer join-> matching pairs + unmatch pair from left side table
+r1=sc.parallelize([(10,20),(30,40),(50,60)])
+r2=sc.parallelize([(10,25),(30,45),(10,55),(70,80)])
+loj_result=r1.leftOuterJoin(r2)
+>>> loj_result.collect()
+[(10, (20, 25)), (10, (20, 55)), (30, (40, 45)), (50, (60, None))]
+
+  
+right outer join-> matching paris+unmatched pair from right side table
+
+r2=sc.parallelize([(10,25),(30,45),(10,55),(70,80)])
+>>> roj_result=r1.rightOuterJoin(r2)
+>>> roj_result.collect()
+10, (20, 25)), (10, (20, 55)), (30, (40, 45)), (70, (None, 80))]
+
+
+Full outer join -> left outer join + Right outer join
+foj_result=r1.fullOuterJoin(r2)
+>>> foj_result.collect()
+[(10, (20, 25)), (10, (20, 55)), (30, (40, 45)), (50, (60, None)), (70, (None, 80))]
+
+
+
+More on Actions
+===============
+
+1. Whenever action is performed, the flow executes from its root RDD
+
+1.collect()
+2.count()
+3.countByKey()
+4.countByValue()
+5.take(num)
+6.top(num)
+7.first()
+8.reduce()
+9.sum()
+10.min()
+11.max()
+12.count()
+13.saveAsTextFile(path)
+
+
+----------------------------------------------------------------------------------
+1. collect()-> collect data from all partiions of different slave machine into client machine
+
+already seen
+--------------------------------------------------------------------------------------
+2. count() =: number of elements in RDD
+----------------------------------------------------------------------------------------
+3. CountByValue(): counts number of times each values occurs in RDD-> output is dictionary
+
+medals=["India","USA","India","Japan","China","Japan","China","China"]
+rdd1=sc.parallelize(medals)
+rdd2=rdd1.countByValue()
+print(rdd2)
+
+defaultdict(<class 'int'>, {'India': 2, 'USA': 1, 'Japan': 2, 'China': 3})
+
+
+rdd1=sc.parallelize([("TN","s"),("Delhi","D"),("TN","S"),("Delhi","D")])
+
+>>> rdd1.countByValue()
+defaultdict(<class 'int'>, {('TN', 's'): 2, ('Delhi', 'D'): 2})
+
+------------------------------------------------------------------------------------
+
+countByKey()-> count by number of time each key has occured
+>>>rdd1=sc.parallelize([("TN","s"),("Delhi","D"),("TN","s"),("Delhi","D")])
+>>> rdd1.countByKey()
+defaultdict(<class 'int'>, {'TN': 2, 'Delhi': 2})
+>>> rdd1=sc.parallelize([("TN","s"),("Delhi","D"),("TN","s"),("Delhi","D"),("TN","K")])
+>>> rdd1.countByKey()
+defaultdict(<class 'int'>, {'TN': 3, 'Delhi': 2})
+-------------------------------------------------------------------------------------
+
+Take(n)-> Takes first n number of elements of a RDD( from left side)
+>>> rdd1=sc.parallelize([100,200,300,400,500,600,700])
+>>> rdd1.take(2)
+[100, 200]
+
+Top(n) -> Takesn top n lement from RDD(from right side)
+>>> rdd1.top(2)
+[700, 600]
+
+
+First()-> gives 1st element of a RDD
+rdd1.first()
+100
+--------------------------------------------------------------------------------
+
+Reduce() combines or sums the elements of a RDD
+>> rdd1.collect()
+[100, 200, 300, 400, 500, 600, 700]
+>>> rdd1.reduce(lambda x,y:x+y)
+2800
+
+
+Difference between reduce and reduceByKey
+
+reduceByKey 										reduce
+
+groups and aggregates (key wise aggregation)     cummulative aggregation
+
+output is key and value pair(k,v)                 only one answer
+
+It is a transformation                            Actions
+
+Applied only on Paired RDD                         not work for paired RDD
+
+-------------------------------------------------------------------------------
+
+sum(), min(),max(),count()
+
+>>> rdd1.sum()
+2800
+>>> rdd1.min()
+100
+>>> rdd1.max()
+700
+>>> rdd1.count()
+7
+>>> rdd1.sum()/rdd1.count()
+400.0
+>>> 
+
+
+
+sales.reduce()                                                     sales.sum()
+
+sales-> partition1,partition2                             sales-> partition1,partition2 
+<100, 200, 300, 400> <500, 600, 700>                 <100, 200, 300, 400> <500, 600, 700>
+     1000             1800    (local aggregated value)
+  node1                 Node2
+individual results of each partition1                  here all partions are collected
+will be collected and aggregated in                    and computed  at client
+another machine(Node3)                               <100, 200, 300, 400> <500, 600, 700>
+<1000,1800>                                              <----- client machine-------->
+  <2800>                                                             sum - 2800
+  
+ final result 2800 is collect into                    result will be stored in client machine
+ client machine
+ 
+ 
+ here we are acheiveing parallelism                    No parallelism so it will be slower 
+ hence it is faster                                    compared to reduce
+
+-------------------------------------------------------------------------------------
+
+13.saveAsTextFile(path)-> saving the output of RDD as a text file
+
+hdfs dfs  -mkdir /pysparkoutput
+
+rdd1=sc.parallelize([10,20,30,40,50])
+rdd1.saveAsTextFile("hdfs://localhost:9000/pysparkoutput/result")
+
+hdfs://localhost:9000/pysparkoutput is the location of datanode
+
+in the output we can clearly see the file has been splitted to partitions for parallelism
+
+ sc.defaultParallelism
+2
+
+commands to view the HDFS file
+================================
+
+start-all.sh
+hdfs dfs -mkdir /pysparkoutput
+stop-all.sh
+exit
+start-all.sh
+create a directory in HDFS
+=================================
+hdfs dfs -mkdir /pysparkoutput2
+list the directory in root (/ means root)
+=========================================
+hdfs dfs -ls /
+hdfs dfs -ls /pysparkoutput2
+hdfs dfs -ls /pysparkoutput2/result
+
+View the file content
+=====================
+hdfs dfs -cat /pysparkoutput2/result/part-00000
+hdfs dfs -cat /pysparkoutput2/result/part-00001
+
+
+
+Try this in Databricks Community Edition
+==========================================
+from pyspark.sql import SparkSession
+spark=SparkSession.builder.appName("myapp").getOrCreate()
+
+rdd=spark.sparkContext.parallelize([100,200,300])
+print(rdd.collect())
+print(rdd.sum())
+rdd2=rdd.map(lambda x:x*x)
+print(rdd2.collect())

@@ -1,0 +1,179 @@
+Handling Blankspace
+=================
+
+
+['spark', 'is', 'in-memory', 'processor']
+>>> words=line.split(" ")
+>>> print(words)
+['', '', '', '', '', '', '', '', '', '', 'spark', 'is', 'in-memory', 'processor', '', '', '', '', '', '', '', '']
+>>> words1=sc.parallelize(words)
+
+>>> words1.collect()
+['', '', '', '', '', '', '', '', '', '', 'spark', 'is', 'in-memory', 'processor', '', '', '', '', '', '', '', '']
+>>> words2=words1.filter(lambda x:x!='')
+>>> words2.collect()
+['spark', 'is', 'in-memory', 'processor']                                       
+>>> z=' '.join(word2.collect())
+>>> z=' '.join(words2.collect())
+>>> z
+'spark is in-memory processor'
+>>> line
+'          spark is in-memory processor        '
+>>> line.strip()
+'spark is in-memory processor'
+>>> 
+
+
+
+#grouping and aggregations
+
+case1: Single grouping and single Aggregation
+
+Ex: give me departmentwise sum of salary
+
+11  3000
+12  5000
+13  2500
+---------------------------------------------------------------------------------------
+
+Case2: Multigrouping and Single Aggregation
+=============================================
+
+ex: select dno,gender,sum(sal) from employees group by dno,gender
+
+11 
+  m-> totalsalary
+  f-> totalsalary
+12
+  m-> totalsalary
+  f-> totalsalary
+13 
+  m-> totalsalary
+  f-> totalsalary
+  \
+  
+def createPariRDD(data):
+    words=data.split(",")
+	deptNO=int(words[4])
+	gender=words[3]
+	sal=int(words[2])
+	pair=((deptNO,gender),sal)
+	return pair
+
+
+>>> 
+>>> rdd1=sc.textFile("hdfs://localhost:9000/dineshnew/emp2.txt")
+>>> deptno_gender_sal_pair=rdd1.map(lambda x:createPariRDD(x))
+>>> deptno_gender_sal_pair.collect()
+[((11, 'm'), 10000), ((12, 'f'), 20000), ((11, 'm'), 30000), ((12, 'm'), 35000), ((11, 'm'), 40000), ((13, 'm'), 45000), ((13, 'f'), 50000)]
+>>> res=deptno_gender_sal_pair.reduceByKey(lambda x,y:x+y)
+>>> res.collect()
+[((11, 'm'), 80000), ((13, 'm'), 45000), ((13, 'f'), 50000), ((12, 'f'), 20000), ((12, 'm'), 35000)]
+	
+------------------------------------------------------------------------------------	
+Case3: Single Grouping and Mulitiple Aggregation
+==========================================
+
+eX; select deptno,sum(sal),min(sal),max(sal), count(*) from emp group by deptno
+
+
+
+def getAggregatesValues(data):
+    deptno=data[0]
+	y=data[1]           #list[10000,20000]
+	s=sum(y)
+	mn=min(y)
+	mx=max(y)
+	cnt=len(y)
+	tuples=(deptno,s,mn,mx,cnt)
+	return tuples
+	
+
+>>> rdd3=rdd2.map(lambda x:(int(x[4]),int(x[2])))
+>>> rdd3.collect()
+[(11, 10000), (12, 20000), (11, 30000), (12, 35000), (11, 40000), (13, 45000), (13, 50000)]
+>>> 
+>>> rdd4=rdd3.groupByKey() #deptno,iterable
+>>> rdd4.collect()
+[(12, <pyspark.resultiterable.ResultIterable object at 0x73b993196840>), (11, <pyspark.resultiterable.ResultIterable object at 0x73b990a956a0>), (13, <pyspark.resultiterable.ResultIterable object at 0x73b990a95550>)]
+>>> #convert iterable to list
+>>> grp=rdd4.map(lambda x:(x[0],list(x[1])))
+>>> grp.collect()
+[(12, [20000, 35000]), (11, [10000, 30000, 40000]), (13, [45000, 50000])]
+>>> def getAggregatesValues(data):
+...     deptno=data[0]
+...     y=data[1]           #list[10000,20000]
+...     s=sum(y)
+...     mn=min(y)
+...     mx=max(y)
+...     cnt=len(y)
+...     tuples=(deptno,s,mn,mx,cnt)
+...     return tuples
+... 
+>>> result=grp.map(lambda x:getAggregatesValues(x))
+>>> result.collect()
+[(12, 55000, 20000, 35000, 2), (11, 80000, 10000, 40000, 3), (13, 95000, 45000, 50000, 2)]
+
+
+
+=====================================================================================
+
+
+Mulitiple grouping and multiple aggregations
+rdd1=sc.textFile("hdfs://localhost:9000/dineshnew/emp2.txt")
+>>> rdd2=rdd1.map(lambda x:x.split(","))
+>>> rdd2.collect()
+[['101', 'Hariharan', '10000', 'm', '11'], ['102', 'Kalai', '20000', 'f', '12'], ['103', 'Sivam', '30000', 'm', '11'], ['104', 'Blake', '35000', 'm', '12'], ['105', 'James', '40000', 'm', '11'], ['106', 'Miller', '45000', 'm', '13'], ['107', 'Alice', '50000', 'f', '13']]
+>>> deptno_gen_sal_pair=rdd2.map(lambda x:((int(x[4]),x[3]),int(x[2])))
+>>> deptno_gen_sal_pair.collect()
+[((11, 'm'), 10000), ((12, 'f'), 20000), ((11, 'm'), 30000), ((12, 'm'), 35000), ((11, 'm'), 40000), ((13, 'm'), 45000), ((13, 'f'), 50000)]
+>>> grp=deptno_gen_sal_pair.groupByKey()
+>>> grp.collect()
+[((11, 'm'), <pyspark.resultiterable.ResultIterable object at 0x73b990a73320>), 
+((13, 'm'), <pyspark.resultiterable.ResultIterable object at 0x73b990a713a0>),
+ ((13, 'f'), <pyspark.resultiterable.ResultIterable object at 0x73b990ab5490>),
+ ((12, 'f'), <pyspark.resultiterable.ResultIterable object at 0x73b990ab5400>),
+ ((12, 'm'), <pyspark.resultiterable.ResultIterable object at 0x73b990ab5430>)]
+#need to conver to list
+
+>>> grp2=grp.map(lambda x:(x[0],list(x[1])))
+>>> grp2.collect()
+
+
+
+
+
+select deptno,gender,sum(sal),min(sal),max(sal), count(*) from emp group by deptno,gender
+((11, 'm'), [10000, 30000, 40000])
+
+def getAggregatesValues(data):
+    deptno=data[0][0]
+ 	gender=data[0][1]           #list[10000,20000]
+    y=data[1]
+    s=sum(y)
+    mn=min(y)
+    mx=max(y)
+    cnt=len(y)
+    tuples=(deptno,gender,s,mn,mx,cnt)
+    return tuples
+	
+>>> aggr=grp2.map(lambda x:getAggregatesValues(x))
+>>> aggr.collect()
+[(11, 80000, 10000, 40000, 3), (13, 45000, 45000, 45000, 1), (13, 50000, 50000, 50000, 1), (12, 20000, 20000, 20000, 1), (12, 35000, 35000, 35000, 1)]
+>>> def getAggregatesValues(data):
+...     deptno=data[0][0]
+...     gender=data[0][1]           #list[10000,20000]
+...     y=data[1]
+...     s=sum(y)
+...     mn=min(y)
+...     mx=max(y)
+...     cnt=len(y)
+...     tuples=(deptno,gender,s,mn,mx,cnt)
+...     return tuples
+... 
+>>> aggr=grp2.map(lambda x:getAggregatesValues(x))
+>>> aggr.collect()
+[(11, 'm', 80000, 10000, 40000, 3), (13, 'm', 45000, 45000, 45000, 1), (13, 'f', 50000, 50000, 50000, 1), (12, 'f', 20000, 20000, 20000, 1), (12, 'm', 35000, 35000, 35000, 1)]
+
+
+

@@ -1,0 +1,400 @@
+CREATE MASTER KEY ENCRYPTION BY PASSWORD='Xyz@1234'
+
+CREATE DATABASE SCOPED CREDENTIAL SasToken
+WITH IDENTITY = 'Shared Access Signature',
+SECRET = 'sv=2024-11-04&ss=bfqt&srt=sco&sp=rwdlacupyx&se=2025-03-29T14:19:36Z&st=2025-03-29T06:19:36Z&spr=https&sig=YGlTM9Zhw49RdGvXWaGPBiLGwL1qXBIv3ajupblgNCk%3D'
+
+CREATE EXTERNAL DATA SOURCE ExtDataSrc
+WITH
+  (  LOCATION = 'https://cfbdatalake.dfs.core.windows.net/mydata', 
+       CREDENTIAL = SasToken 
+      )
+
+CREATE EXTERNAL FILE FORMAT TextFileFormat 
+WITH (
+        FORMAT_TYPE = DELIMITEDTEXT,
+    FORMAT_OPTIONS (  
+    FIELD_TERMINATOR=',',
+    FIRST_ROW=2)
+)
+
+CREATE EXTERNAL TABLE orders(
+order_id bigint,
+order_date nvarchar(4000),
+customer_id bigint,
+order_status nvarchar(4000)
+)
+with (
+LOCATION='/Orders.csv',
+DATA_SOURCE=ExtDataSrc,
+FILE_FORMAT=TextFileFormat
+)
+GO
+
+select * from orders;
+
+
+write a order wise count
+
+====================================================================================================
+
+
+Generated 
+
+
+IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseDelimitedTextFormat') 
+	CREATE EXTERNAL FILE FORMAT [SynapseDelimitedTextFormat] 
+	WITH ( FORMAT_TYPE = DELIMITEDTEXT ,
+	       FORMAT_OPTIONS (
+			 FIELD_TERMINATOR = ',',
+			 FIRST_ROW = 2,
+			 USE_TYPE_DEFAULT = FALSE
+			))
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'mydata_mycfbblob1234_dfs_core_windows_net') 
+	CREATE EXTERNAL DATA SOURCE [mydata_mycfbblob1234_dfs_core_windows_net] 
+	WITH (
+		LOCATION = 'abfss://mydata@mycfbblob1234.dfs.core.windows.net' 
+	)
+GO
+
+CREATE EXTERNAL TABLE dbo.ordersnew (
+	[order_id] bigint,
+	[order_date] datetime2(0),
+	[order_customer] bigint,
+	[order_status] nvarchar(4000)
+	)
+	WITH (
+	LOCATION = 'Orders.csv',
+	DATA_SOURCE = [mydata_mycfbblob1234_dfs_core_windows_net],
+	FILE_FORMAT = [SynapseDelimitedTextFormat]
+	)
+GO
+
+
+SELECT TOP 100 * FROM dbo.orders
+GO
+
+
+We have also seen spark Pool 
+
+Serverless sql Pool-> we can create only external table
+Dedicated sql pool-> we can create external and internal table
+Apache SQL Pool-> we can work with PySpark instead of T SQL
+
+
+use cases of serverless pool
+for temporary data exploration
+
+logical datawarehouse
+
+$5 per tb for data scanned-> minimum charges for 10MB
+
+
+CSV file
+2TB-> 200 columns
+
+select col,col2 from this table, it will scan the entire table
+
+
+if we opt for parquet format so that we scan less data
+
+T-SQL for querying?
+
+we do not have to perform an ETL to bring the data to your warehourse
+rather we can directly process the data at the source location
+
+federated queries
+
+In serverless pool
+
+1. OPENROWSET-> this is to directly query a file without creating any entity on top of it
+2. External table-> Masterkey, File format, Source,Schema
+
+
+
+Need for Datawarehouse
+
+is Azure synapse a datawarehouse?
+
+not just a Datawarehouse
+Ingestion-> using synapse pipelines
+computation-> Dedicated SQL, serverless SQL pool, Apache Spark cluster, synapse
+Dataflows
+Service layer->dedicated sql pool
+connected services - powerbi
+
+Serverless Pool
+
+we queries the data using datalake gen 2
+
+it is cost effective
+faster data exploration
+logical datawarehouse
+
+
+
+DataLakehouse is  modern datawarehouse architecture
+
+Datawarehouse 
+============
+has highly curated and structured data
+data governance
+security aspects
+
+
+challenges in DW
+================
+need some % of data which is structured
+machine learning cannot be done
+
+
+DataLake
+========
+
+Store data in open file format
+
+scalabe and are inexpensive
+enable ML and Datascience
+
+
+Challenges
+==========
+Data governance and reliability of data
+not suitable for access control
+not suitable for BI workloads
+
+
+Datalake+Datawarehouse
+
+various data source-> ingest->Datalake->Datawarehouse-> PowerBI
+
+we need to manage 2 different systems independently
+
+this leads to duplication of data and addition ETL activity
+
+Datalakehouse
+==============
+
+brings the best of both systems together
+
+Objective of DataLakehouse
+
+1. Quick data discovery
+2. handle all type of data
+3. reducing the ETL activity
+4. there should not be multiple copies
+5. CSV, parquet- open file formats
+6. Storage and compute are independent
+7. integrated security and governance
+8. ML, Power BI and other use cases
+9. should be cost effective
+10. ACID Property will be support(Delta Format)
+
+
+Synapse
+
+through external tables
+we can store all kinds of data in ADLS gen2
+databricks, snowflake, aws redhisft, azure synapse
+
+a single solution which can handle our computational needs and can be acting as a serving layer
+
+
+Dedicated Serverpool
+=====================
+
+
+1. Internally it uses a distributed query engine
+2. we can used Dedicated Serverpoll as a processing layer or service layer
+3. Massive Parallel Processing
+
+Architecture
+===========
+1 control node and multiple compute node
+
+60 distributions
+
+DW100c- 1 compute node, 60GB of RAM
+DW200c- 1 compute node, 120GB of RAM
+DW300c- 1 compute node, 180GB of RAM
+...
+...
+DW1000c-2 compute node, 600GB of RAM
+DW2000c-4 compute node, 1200GB of RAM
+DW30000c-60 compute node, 18000GB of RAM
+
+DWU-> Data Warehouse Unit
+
+Each DWU is nothing but some amount of computer, memory and IO bundled together
+
+we get dedicated internalstorage for dedicated sql pool (60 Fixed Distribution)
+
+1 compute node- 60 distributions
+2 compute nodes- each compute node have 30 distribution
+60 computer nodes- each compute node have 1 distribution
+
+
+we achieve the maximum parallelism
+
+is more like a traditional datawarehouse
+fact and dimension table
+
+customers- Dimension table(small table)
+products- Dimension table
+orders - Fact table(large table)
+
+    		Customers
+		 |	
+categories ----orders ----  products
+                 |
+               departments
+
+
+no concept of primary key and foreign key
+
+in dedicated pool there are 3 types of table distributions
+
+
+1. round robin
+2. hash
+3. replicate
+
+Round Robin
+D1  1  4  7
+D2  2  5  8
+D3  3  6  9
+
+order_id,order_date,order_customer,order_status
+1,2013-07-25 00:00:00.0,11599,CLOSED
+2,2013-07-25 00:00:00.0,256,PENDING_PAYMENT
+3,2013-07-25 00:00:00.0,12111,COMPLETE
+4,2013-07-25 00:00:00.0,8827,CLOSED
+5,2013-07-25 00:00:00.0,11318,COMPLETE
+6,2013-07-25 00:00:00.0,7130,COMPLETE
+7,2013-07-25 00:00:00.0,4530,COMPLETE
+8,2013-07-25 00:00:00.0,2911,PROCESSING
+9,2013-07-25 00:00:00.0,5657,PENDING_PAYMENT
+10,2013-07-25 00:00:00.0,5648,PENDING_PAYMENT
+11,2013-07-25 00:00:00.0,918,PAYMENT_REVIEW
+
+on orders.order_customer=customer.customer_id
+order 1 is available in 1st distribution
+customer for that order is avaialabe in 3rd distribution
+
+
+easy to distribute
+
+but when running query it has to do shuffling when we look to do aggregations or joins
+
+
+
+hash
+====
+60 distribution
+
+Hash function will be performed for customer
+
+customer with same id will be available in same distribution
+
+this process with take time to distribute, once distributed then querying is faster
+
+
+Replicate
+======
+
+the copy is made for all 60 distributions
+works for small dimension table
+ordertable (fact-large)-> replication is too high
+order_customer_id
+
+customer table(dimensiontable-small) -> we can do replication
+customer_id
+
+
+D1
+orderstable
+1 1
+2 2
+3 3
+
+customers table can be replicated across all distributions
+order able can be a hash distribution
+
+
+like broadcast join and map side join
+
+
+Steps in Dedicated Pool
+
+1. upload the data in ADLS Gen2
+2. we want to create a order table using dedicated pool
+
+
+2 options
+1. polybase-> uses massive Parallel processing, external objects is required
+
+using CTAS(internal table, create table As select from external table)
+
+create table orders_internal_roundrobin
+with
+(
+    distribution=round_robin
+)
+AS
+select * from myorders
+DBCC PDW_SHOWSPACEUSED('orders_internal_roundrobin');
+
+select * from orders_internal_roundrobin;
+
+Hash function
+================
+
+create table orders_internal_hash
+with
+(
+    distribution=HASH(order_customer)
+)
+AS
+select * from myorders
+DBCC PDW_SHOWSPACEUSED('orders_internal_hash')
+
+select order_customer,count(*) as total_orders from orders_internal_hash
+group by order_customer order by total_orders;
+
+
+CETAS(Create Exteranal Table As select * from externaltablename)
+
+
+
+2 using Copy Command
+
+same like poly base, but performance is better than polybase, because no external object is required)
+
+
+
+Hash- used for quick fact table
+round robin-> quick and used for staging table
+replicate used for small dimension table
+
+
+
+
+you have a table in dedicated sql pool
+
+spark cluster is taking the data from dedicated sql pool using polybase
+driver will ask the control node that is needs the data
+
+control node will pass the intstruction to compute node and then compute node write the data in parallel in datalake
+
+from datalake, spark will take the data
+
+dedicated pool->datalake->spark->sparktable->hive metastore
+
+read/write spark table through serverless sql pool, 
+Serverless sql pool doesnot have access to hive metastore
+a copy of this metadata is create
+
+we can create spark table using the metadata will be created.
+

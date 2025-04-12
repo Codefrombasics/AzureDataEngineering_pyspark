@@ -1,0 +1,257 @@
+
+Big Data
+
+Big Data is characterized by 5V's 
+
+1. Volume- Data is huge, it cannot be stored in traditional system. Ex: Social Media/Ecommerce sales, data from sensors which are in petabytes(1PB)
+2. Variety- Different formats of Data         
+
+           1. Strucutured- Database Table (RDBMS)
+		   2. Unstructured-Log files, image vidoes
+		   3. Semistructured-CSV,JSON, XML(partial schema)
+
+3. Velocity-> The at which new data is coming in and processed Ex:Amazon sale, how many iPhones sold in last 1 hour
+
+4. Veracity-> quality or correctness of data. Data cannot be always be in right format and we should be able handle this high volume of data which are not so quality.
+	
+5. Value->Should generate some value out of the data collected by processing it for making
+          Business Decision
+		  
+
+Monolithic, Microservice, Distributed Systems	
+
+Monolithic-> one bigsystem holding a lot of resources and there by we get high computing power
+
+
+What are the resources?
+1. Compute- CPU Cores(Ex-4 cores)
+2. Memory- RAM(Ex-8GB)
+3. Storage- HDD(Ex-1TB Hard Disk)
+
+X resources give Y Performance
+
+
+2X resources give 2Y Performance?
+
+we cannot acheive the above performance due to hardware limitations
+Performance ratio doesn't match with amount spent
+Monolithic is not scalable, so performance cannot be acheived
+Monolithic support vertical scaling, increasing the power of one machine, only by increasing
+the resources of the system  
+
+
+Distributed Systems
+====================
+
+is a cluster of system grouped together with each holding its own resources. 
+Computing power of such system is a sum of computing power of all the nodes in the cluster
+
+Ex 5 Nodes Cluster, with each has 4 CPU core, 8GB RAM and 1TB Harddisk
+
+20Core CPU
+40GB RAM
+5 TB Hard Disk
+
+In DS, horizontal scaling is possible, we can bring more nodes as per the needs
+
+Autoscaling
+
+Horizontal scaling  is  a true scaling. by this we acheive
+
+2X resources give 2Y Performance using Horizontal Scaling
+
+
+All of the Big data systems are based on the Distributed architecture and Not Monolithic
+in order to acheive True scaling.
+
+
+To design Big Data System, we need to follow 3 things
+
+1. Storage
+2. Processing/Computation
+3. SCalability- increasing and decreasing the resources based on the data
+
+
+20 cloths
+
+20 Washing machine
+
+to wash 1 cloth 1 minute
+
+1 Minute-> we are achieving this because of Distributed System
+
+What should I do if get 30 Cloths
+
+30 WashingMachines
+
+
+5 cloths 
+5 WashingMachines
+
+3 factors of Big Data System
+1. Where is the data going to be stored
+2. How is the data going to be processed
+3. is the system scalable?
+
+
+
+Hadoop?
+
+2007:Hadoop 1.0
+2012:Hadoop 2.0
+Current Verion: Hadoop 3.x
+
+
+3 Core Components of Hadoop
+1. HDFS(Hadoop Distributed File System)-> Storage
+2. MapReduce  -> for Processing/Computation
+3. YARN(Yet Another Resource Negotiator)- Resource Manager/Negotiator
+
+
+Hadoop
+
+1. Hive-> warehouse
+2. HBase-> NoSQL DB
+3. Sqoop -> Data Ingestion->ADF(Azure Data Factory)
+4. Oozie-> Orchestration
+5. Pig -> Processing(sql)
+
+
+Challanges in Hadoop
+
+1. MapReduce- Huge lines of code to perform simple computation
+2. Different components of Hadoop need to be used to acheive different task
+
+Hadoop cluster need local resources(On-Premise)
+
+
+
+Cloud Advantages
+
+1. Scalable
+2. Minimal Expenditure and Low Operational Cost
+3. Agility- we can create a cluster in a click of the button
+4. GeoDistribution-
+5. Disaster Recovery
+6. Cost Effective
+
+
+What is Apache Spark?
+
+Apache spark is General Purpose, In Memory, Compute Engine on top of Hadoop
+
+
+1. HDFS(Hadoop Distributed File System)/Local Harddisk/Amazon S3/ Azure Data Lake-> Storage
+2. Spark -> for Processing/Computation
+3. YARN(Yet Another Resource Negotiator)- Resource Manager/Negotiator
+
+Spark needs 2 components
+1. Storage-HDFS(Hadoop Distributed File System)/Local Harddisk/Amazon S3/ Azure Data Lake
+2. Resource Manager-> YARN|Mesos|Kubernetes
+
+
+Spark build using Scala
+
+PYthon, Scala, R, Java, Spark SQL
+
+Spark with python is called PySpark
+
+
+Data Engineering Flow
+
+1. Data From Multiple Source
+2. Ingestion
+3. Storage(Data Lake)
+4. Processing
+5. Service Layer
+6. Visualization Tool (PowerBI, Kibana,Tableau)
+
+Azure DAta Engineering
+
+   Multiple Source->ADF---> ADLS Gen2----> Azure Databricks-> Azure SQL/Synapse/CosmosDB
+
+
+AWS DAta Engineering
+    Multiple Source-> AWS Glue(UI/Code)-> Amazon S3->AWS Databricks/Athena/Redshift->AWS RDS/DynamoDB
+   
+   
+On-Premise
+    MysqlSQLDB-> SQOOP-> HDFS-> MapReduce/Spark->HBase
+	
+	
+Computation
+1. Serverless- less cost, no guranteed performance, Good for scheduling Jobs,Ex: AWS Athena, Azure Synapse Serverless
+2. Serverful-> Guranteed Performance, dedicated Server, Good for immediate Execution, but not suitable for scheduled jobs
+   Redshift/Synapse serverful
+   
+=========================================Day2========================================
+   
+   HDFS(Hadoop Distributed File System) Architecure
+   
+   1. Name Node-> Master Node acts like an index to where the data is stored
+   2. Data Node->
+   
+
+   File with size 512GB
+   Each Block of size 128MB->4 x 128=512GB (512/128=4 Blocks)
+   1 Block = 1 Partition
+   
+   File splited into 4 Block-> Each block 1 data node
+   
+   4 Data Node
+   
+          NN     (B1-DN1,B2-DN2,B3-DN3,B4-DN4)-> meta data           
+   
+   
+   DN1 DN2 DN3  DN4 -> actual data
+  
+   b43 b11 b12 b13
+   b21 b22  b23 b31
+   b32,b33  b41,b42
+   
+   hello
+   hello... 128
+   Hi
+   hiend..  129-255
+   good
+   good..-256+128  - 484 
+   welcome
+   welcom.. 484+128- 512
+    
+	
+   Hadoop has replication factor as 3
+   b11, b12,b13
+   b21,b22,b23
+   b31,b32,b33
+   b41,b42,b43
+   
+   
+   Client will requet to read a file1 from Namenode-> Name node provides the actual
+   location details of file1-> client uses this data to fetch the file from the DATANODE 
+   for reading
+   
+   
+   How does NN know the DN is alive?
+    by sending heart beat signals for every 3 seconds, which indicates the DataNode is alive
+	if the NN does not receive a heartbeat signal for 30 seconds, then name node assumes DataNode is dead
+	if NN does not receive the signal after 10 conseuctive times
+  
+ What if a Namenode fails?
+   if NN fails, we have a Secondary Name Node to handle this situation
+
+    
+   
+   
+   
+
+
+
+
+
+
+
+
+
+
+
+

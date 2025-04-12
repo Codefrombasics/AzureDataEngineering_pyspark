@@ -1,0 +1,165 @@
+Session 3
+==========
+
+ File with size 512GB
+   Each Block of size 64MB->8 x 64=512GB (512/64=8 Blocks)
+   1 Block = 1 Partition
+   
+   if block size is 256MB= 512/256=2 Block
+   with 128MB block we can balance the performance
+   
+   Advantage of having higer block size
+   =====================================
+   Namenode is less burdened as it needn't have to store too many entries in the metadata table
+   
+   1 Manager Manages 2 workers it is easy for manager but burder for worker
+   
+   Drawback
+   ========
+   
+   Compromising parallelism, less number of nodes implise less parallelism.
+   
+   
+   The balanced approach of 128 MB is considered to get better performance
+   
+   
+   Namenode Fedaration in new Hadoop version(3.0)
+   
+   we can have more than one NameNode to handle the growing metadata
+   
+   In order to overcome the bottleneck and avoid performance issues because of the growing
+   metadata, the metadata will be distrubited across multiple Namenode
+   By this we acheive scalability.
+   
+   
+   
+   
+   
+   
+   
+   What is called Rack?
+   group of servers in different geolocations
+   
+   Rack1 -> Chennai
+   Rack2-> Chicago
+   Rack3-> Australia
+   
+   Why its available in different geolocations?
+   
+   to avoid natual calamity, you lose data
+   
+   The balance approach is to place the copes in two different racks, original copy in 1 Rack
+   2 replication copy will be in another racks
+   
+   Rack1 -> Chennai  file1
+   Rack2-> Chicago   file1  file1
+   Rack3-> Australia
+   
+   
+   To practice Hadoop
+   
+   1. Manually instaling Hadoop services like Sqoop, Hive, Spark,Kafka 
+     time consuming
+   2. Pseudo Distributed Mode(1 cluster with 1 node, same node will be master and slave)
+      This is acheived using VM that has all the services preinsalled like Cloudera QuickStart VM, you need
+	  Virual Box or VM Ware.
+	  
+	  Samenode will be master node and slave node
+	  
+	  Drawback-> we can use it for learning, but will not give you the feel of production environment
+	  it will make your system slow(50% of resources will be allocated for it)
+	  
+	  
+	  
+	3. Fully Distributed Mode: A multinode cluster by external 3 party lab provide
+	    1. CloudxLab, this will give you a feel of production environment.
+		
+		
+	Let us assume you have 10TB HDD in each of the 3 data node. Not all the 10TB will not 
+	be allocated for HDFS, some will be allocated for local operations
+	
+	10TB Hard Disk
+	3 Data Nodes= 30TB
+	
+	Each Data Node:
+	 9TB for HDFS
+	 1TB for local operations/non HDFS
+	 
+	In total for HDFS- 27TB and for NonHDFS- 3TB
+	
+	
+	HDFS VS Cloud Data Lake
+	
+	
+	HDFS+PySpark
+	ADLS Gen2/ Amazon S3 + DataBricks
+	
+	
+	HDFS-> store the data in the block form
+	
+	ADLS Gen2/Amazon S3-> data will be stored in object form
+	
+	
+	if data is in object form we get some parameters
+	1. id- unique identifier
+	2. value-> content
+	3. Metadata-> Who can acces sthe file, what kind of data is stored
+	
+	
+	Drawback of HDFS
+	
+	HDFS is not persistent(Data lost), Storage+Compute are tightly coupled, if you increase the storage
+	we have to increate the compute also.  you have to pay for compute as well unneccessarily
+	
+	In HDFS, we cannot access data from one HDFS cluster to another
+	
+	
+	
+	but ADLS Gen2/AmazonS3 are persistent,Storage+Compute are loosley coupled, 
+	we can accessthe data from one cluster to another cluster
+	
+	
+	
+	Distributed Processing
+	=======================
+	
+	MapReduce is a programming Pradigm
+	
+	1. Map
+	2. Reduce
+	
+	
+	(K,V)-> Mapper->(K,V)->Reducer->(K,V)
+	
+	 
+	Hello           Hello,1         Hello,2
+	Hello           Hello,1         Code,1
+	Code            Code,1          From,1
+	From            From,1          Basic,1
+	Basics          Basics,1
+	
+	
+	Principal of Locality
+	====================
+	
+	Which is bigger? data? or code??
+	
+	Hadoop works on the Principal of Locality
+	
+	Data will be processed on the same machine where it is stored
+	
+	Code(mapper,reducer) will be move to the place where data is
+	Code is smaller so it is easy to move
+	
+	
+	The output of the mapper is not the final output, it is a intermediate output
+	
+	The output of all mappers go to one other machine(any datanode), where the reduce activity take place
+	
+	Mapper will give you parallelism
+	  
+   
+   
+   
+   
+   

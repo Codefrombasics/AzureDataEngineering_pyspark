@@ -1,0 +1,134 @@
+Session 5- YARN(YET Another Resource Negotiator)
+===============
+
+
+Case 1:
+Namenode -> Running
+                        ------> -> we can perform storage operation only
+Jobtracker-> down
+
+
+Following things will happen
+
+1. Running jobs will be terminated
+2. New jobs cannot be submitted
+3. Queue Jobs will be terminated
+
+
+Case 2:
+Namenode is down
+                    --------------> we cannot perform any storage operation
+				
+Jobtracker is running
+
+Why we cannot perform processing when JobTracker is running?
+
+JobTracker is to process the MR Job, it required metadata of the file, which is available
+in Namenode, and Namenode is down, so JobTracker cannot perform processing
+
+
+Following things will happen
+
+1. Running jobs will be terminated
+2. New jobs cannot be submitted
+3. Queue Jobs will be terminated
+
+
+                       Storage                Newjobs            RunningJobs    QueuedJobs
+ NN Running              Yes                     No                No              No
+ JT Down
+ 
+ NN Down                  No                     No                No              No
+ JT Running
+ 
+ 
+ 
+ We conclude that
+ 
+Case 1: partial cluster services are down
+Case 2: entire cluster services are down
+
+
+Single Point of Failure(SPOF)- if NN failes entire cluster is down
+
+From Hadoop 2.xx version onwards, it is SPOF free Architecture. The above failure is 
+address in Hadoop 2.xx
+
+
+Ex:
+
+NN1-> Active--> down
+NN2-> Passive---> Active---> down
+NN3-> Passive----> Passive ----> Active
+
+How NN2/NN3 know the NN1 has been down, via Heartbeat signals
+
+At a point of time, only one Namenode will be active and then passive Namenode will be keep
+collecting the data
+
+If suddenly active NN is down, then anyone of the passive NN will become active
+
+
+
+	Hadoop 0.xx/1.xx                       Vs                 2.xx version
+1.here no metadata share                           here metadata share is available
+2.No High Availability                             High Availability 
+3. SPOF is at Namenode                             SPOF Free Architecture
+4. Default Block size is 64MB                      Default Block size 128MB
+5. hdfs command                                    hdfs command
+   hdfs -fs command name                           hdfs -dfs command name
+   
+6. More Burdern wa on JobTracker                   But here JobTracker is replace with
+  JobTracker has to maintain the                   2 new components
+  1. Resource Management                           1. Resource Manager-> for resource mgmt
+  2. Task Monitoring                               2. Application Master-> for task monitoring
+                                                      TaskTracker is replaced with NodeManager
+7. Starting the service                           Starting the service
+  1. start-dfs.sh-> for storage                   1. start-dfs.sh-> for storage  
+  2. start-mapred.sh-> for processing             2. start-yarn.sh -> for process
+  
+  
+  
+--------------------------------------------------------------------------------------
+
+YARN has 7 components
+-------------------------------------------------------------------
+1.Resource Manager(RM)
+2. Application Manager(AM) -----------------------> Master Level
+3. Resource schedular (RS)
+4. Job History Server (JHS)
+--------------------------------------------------------------------
+5. Application Master (ApM)
+6. Namenode Manager (NM)              ------------------> slave level
+7. Container (C)
+----------------------------------------------------------------
+
+1. Resource Manager -> Responsible for Resource monitoring
+   Two subservices
+   1. Applicaiton Manager -> for Task Related Activities
+   2. Resource Schedular  -> For Storage related Activities
+   
+2. Job History Server -> Keep track of history of all the jobs
+
+3. Application Master -> Responsible for Task Monitoring
+    1 job-> 1 AM will be assigned
+	2 jobs-> 2 AM will be assigned
+	3 jobs -> 3 AM will be assigned
+	n jobs-> n AM will be assigned
+	
+	
+here there is no burden
+
+4. NodeManager: similar to task tracker, responsible for executing the task
+
+5. Container: Set of Hardware resources required for executing the task
+
+
+YARN Architecture
+
+
+
+
+
+
+
