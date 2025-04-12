@@ -1,0 +1,77 @@
+Exercise 1: Create DataFrames
+Dataset 1 – Department A Employees
+
+data_dept1 = [
+    ("101", "Alice", "25", "F", "2022-01-15", "55000", "HR"),
+    ("102", "Bob", "30", "M", "2021-11-20", "60000", "HR"),
+    ("103", "Carol", "28", "F", "2020-05-10", "58000", "HR"),
+    ("104", "Dan", "34", "M", "2019-03-25", "61000", "Finance"),
+    ("105", "Eva", "27", "F", "2023-02-01", "57000", "Finance"),
+    ("106", "Frank", "29", "M", "2021-07-14", "59000", "Finance"),
+    ("107", "Grace", "31", "F", "2020-12-05", "62000", "Marketing"),
+    ("108", "Hank", "26", "M", "2022-08-18", "54000", "Marketing"),
+    ("109", "Ivy", "33", "F", "2018-09-09", "63000", "Marketing"),
+    ("110", "Jack", "32", "M", "2021-04-23", "60000", "HR")
+]
+Dataset 2 – Department B Employees
+
+data_dept2 = [
+    ("201", "Karen", 38, "F", "2020-02-10", 70000, "IT"),
+    ("202", "Leo", "40", "M", "2019-06-01", "72000", "IT"),
+    ("203", "Mia", 35, "F", "2021-10-12", 71000, "IT"),
+    ("204", "Nate", "36", "M", "2022-04-16", "70500", "IT"),
+    ("205", "Olga", 39, "F", "2023-01-01", 71500, "Support"),
+    ("206", "Paul", "41", "M", "2018-11-05", "73000", "Support"),
+    ("207", "Quinn", 37, "M", "2020-07-30", 69500, "Support"),
+    ("208", "Rita", "42", "F", "2021-03-14", "74000", "Support"),
+    ("209", "Sam", 34, "M", "2022-09-19", 69000, "IT"),
+    ("210", "Tina", "43", "F", "2019-01-20", "75000", "IT")
+]
+Columns:
+id: Employee ID (string or int)
+name: Employee Name (string)
+age: Age (string or int – inconsistent on purpose)
+gender: Gender ("M"/"F")
+join_date: Joining Date (string, will need to cast to DateType)
+salary: Salary (string or int – also inconsistent)
+dept_name: Department Name
+
+Exercise 2: Casting Data Types
+Tasks:
+Cast age and salary to IntegerType.
+Cast join_date to DateType.
+Validate schema changes and check for nulls due to bad data.
+
+Exercise 3: Union and Union All
+Tasks:
+
+Union the two employee DataFrames after cleaning and casting.
+
+Make sure union is not giving duplicate(check)
+
+Create a new column source (e.g., "A" or "B") before the union to trace origin.
+
+Exercise 4: Join DataFrames
+Dataset – Department Details
+python
+Copy
+Edit
+departments = [
+    ("HR", "Building A", "New York"),
+    ("Finance", "Building B", "Chicago"),
+    ("Marketing", "Building C", "San Francisco"),
+    ("IT", "Building D", "Seattle"),
+    ("Support", "Building E", "Austin"),
+    ("Legal", "Building F", "Boston")
+]
+Columns:
+dept_name: Name of the department
+location: Building location
+city: City where the department is based
+
+Exercise:
+1.Join with the unified employee DataFrame on dept_name.
+2.Perform inner, left, and outer joins.
+3.Filter employees in specific cities or departments.
+4.Count employees per department and city.
+5.Identify any departments without employees.
