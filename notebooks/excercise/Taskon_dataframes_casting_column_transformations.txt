@@ -1,0 +1,133 @@
+employee_data = [
+    ("Alice", "HR", 55000),
+    ("Bob", "HR", 60000),
+    ("Carol", "HR", 58000),
+    ("Dan", "Finance", 61000),
+    ("Eva", "Finance", 57000),
+    ("Frank", "Finance", 59000),
+    ("Grace", "Marketing", 62000),
+    ("Hank", "Marketing", 54000),
+    ("Ivy", "Marketing", 63000),
+    ("Jack", "HR", 60000),
+    ("Karen", "IT", 70000),
+    ("Leo", "IT", 72000),
+    ("Mia", "IT", 71000),
+    ("Nate", "IT", 70500),
+    ("Paul", "Support", 73000),
+    ("Rita", "Support", 74000)
+]
+
+columns = ["name", "department", "salary"]
+1: Count Employees per Department
++----------+-----+
+|department|count|
++----------+-----+
+|        HR|    4|
+|   Finance|    3|
+| Marketing|    3|
+|        IT|    4|
+|   Support|    2|
++----------+-----+
+2: Total Salary per Department.
+----------+------------+
+|department|total_salary|
++----------+------------+
+|        HR|      233000|
+|   Finance|      177000|
+| Marketing|      179000|
+|        IT|      283500|
+|   Support|      147000|
+3: For each department, find the maximum and minimum salary.
++----------+----------+----------+
+|department|max_salary|min_salary|
++----------+----------+----------+
+|        HR|     60000|     55000|
+|   Finance|     61000|     57000|
+| Marketing|     63000|     54000|
+|        IT|     72000|     70000|
+|   Support|     74000|     73000|
++----------+----------+----------+
+4: Show a list of all employees ordered by salary from highest to lowest.
++-----+----------+------+
+| name|department|salary|
++-----+----------+------+
+| Rita|   Support| 74000|
+| Paul|   Support| 73000|
+|  Leo|        IT| 72000|
+|  Mia|        IT| 71000|
+| Nate|        IT| 70500|
+|Karen|        IT| 70000|
+|  Ivy| Marketing| 63000|
+|Grace| Marketing| 62000|
+|  Dan|   Finance| 61000|
+|  Bob|        HR| 60000|
+| Jack|        HR| 60000|
+|Frank|   Finance| 59000|
+|Carol|        HR| 58000|
+|  Eva|   Finance| 57000|
+|Alice|        HR| 55000|
+| Hank| Marketing| 54000|
++-----+----------+------+
+5: Find the top 3 departments with the highest average salary.
++----------+------------------+
+|department|        avg_salary|
++----------+------------------+
+|   Support|           73500.0|
+|        IT|           70875.0|
+| Marketing|59666.666666666664|
++----------+------------------+
+
+
+
+employee_data = [
+    ("E101", "Alice", "HR", "Manager", "2022-01-15", "A", "55000"),
+    ("E102", "Bob", "Finance", "Analyst", "2021-11-20", "B", "60000"),
+    ("E103", "Carol", "Marketing", "Executive", "2020-05-10", "C", "58000"),
+    ("E104", "Dan", "IT", "Developer", "2019-03-25", "A", "61000"),
+    ("E105", "Eva", "Support", "Support Staff", "2023-02-01", "B", "57000"),
+    ("E106", "Frank", "HR", "Recruiter", "2021-07-14", "C", "59000")
+]
+
+columns = ["emp_id", "name", "department", "job_title", "join_date", "performance_grade", "salary"]
+
+df = spark.createDataFrame(employee_data, columns)
+df.show()
+
+
+6 change the column name salary to monthly_salary
+7 Cast monthly_salary to Integer and join_date to DateType
+8 Add a new column bonus_eligible based on performance_grade if grade is A, print "yes" otherwise pring "no"
++------+-----+----------+-------------+----------+-----------------+--------------+--------------+
+|emp_id| name|department|    job_title| join_date|performance_grade|monthly_salary|bonus_eligible|
++------+-----+----------+-------------+----------+-----------------+--------------+--------------+
+|  E101|Alice|        HR|      Manager|2022-01-15|                A|         55000|           Yes|
+|  E102|  Bob|   Finance|      Analyst|2021-11-20|                B|         60000|            No|
+|  E103|Carol| Marketing|    Executive|2020-05-10|                C|         58000|            No|
+|  E104|  Dan|        IT|    Developer|2019-03-25|                A|         61000|           Yes|
+|  E105|  Eva|   Support|Support Staff|2023-02-01|                B|         57000|            No|
+|  E106|Frank|        HR|    Recruiter|2021-07-14|                C|         59000|            No|
++------+-----+----------+-------------+----------+-----------------+--------------+--------------+
+9. Add columns for year_joined get only year from the join_date and is_senior using withColumns
+if the Job Tile is Manager or Developer print it as YES, Otherwise No
++------+-----+----------+-------------+----------+-----------------+--------------+--------------+-----------+---------+
+|emp_id| name|department|    job_title| join_date|performance_grade|monthly_salary|bonus_eligible|year_joined|is_senior|
++------+-----+----------+-------------+----------+-----------------+--------------+--------------+-----------+---------+
+|  E101|Alice|        HR|      Manager|2022-01-15|                A|         55000|           Yes|       2022|      Yes|
+|  E102|  Bob|   Finance|      Analyst|2021-11-20|                B|         60000|            No|       2021|       No|
+|  E103|Carol| Marketing|    Executive|2020-05-10|                C|         58000|            No|       2020|       No|
+|  E104|  Dan|        IT|    Developer|2019-03-25|                A|         61000|           Yes|       2019|      Yes|
+|  E105|  Eva|   Support|Support Staff|2023-02-01|                B|         57000|            No|       2023|       No|
+|  E106|Frank|        HR|    Recruiter|2021-07-14|                C|         59000|            No|       2021|       No|
++------+-----+----------+-------------+----------+-----------------+--------------+--------------+-----------+---------
+
+5: Add annual_salary column
+
+emp_id| name|monthly_salary|annual_salary|
++------+-----+--------------+-------------+
+|  E101|Alice|         55000|       660000|
+|  E102|  Bob|         60000|       720000|
+|  E103|Carol|         58000|       696000|
+|  E104|  Dan|         61000|       732000|
+|  E105|  Eva|         57000|       684000|
+|  E106|Frank|         59000|       708000|
++------+-----+--------------+-------------+
